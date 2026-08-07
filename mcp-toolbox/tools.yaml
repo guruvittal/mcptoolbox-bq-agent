@@ -1,0 +1,40 @@
+# MCP Toolbox for Databases configuration
+# Defines BigQuery connection source and query tools for agent_analytics
+
+sources:
+  bigquery_analytics:
+    kind: bigquery
+    project: "${BIGQUERY_PROJECT_ID}"
+
+tools:
+  execute_sql:
+    kind: bigquery-sql
+    description: "Execute a SQL query on BigQuery. Query tables in the agent_analytics dataset such as conversation_transcripts or agent_logs."
+    source: bigquery_analytics
+    statement: "$query"
+    parameters:
+      - name: query
+        type: string
+        description: "Valid Standard SQL query string to run against BigQuery"
+
+  list_analytics_tables:
+    kind: bigquery-sql
+    description: "List all tables and views available in the agent_analytics dataset."
+    source: bigquery_analytics
+    statement: |
+      SELECT table_name, table_type, creation_time
+      FROM `agent_analytics.INFORMATION_SCHEMA.TABLES`
+      ORDER BY table_name ASC
+
+  get_table_schema:
+    kind: bigquery-sql
+    description: "Get the column names and data types for a specific table in the agent_analytics dataset."
+    source: bigquery_analytics
+    statement: |
+      SELECT column_name, data_type, is_nullable
+      FROM `agent_analytics.INFORMATION_SCHEMA.COLUMNS`
+      WHERE table_name = $table_name
+    parameters:
+      - name: table_name
+        type: string
+        description: "The name of the table to inspect schema for"
